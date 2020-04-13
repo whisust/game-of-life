@@ -13,7 +13,7 @@ fn new_state(x: usize, y: usize) -> Vec<Vec<bool>> {
     return xs;
 }
 
-fn render(state: &Vec<Vec<bool>>, x: usize, y: usize) {
+fn render(state: &Vec<Vec<bool>>, x: usize, y: usize) -> String{
     let mut _formatted_state: String = "".to_string();
     for _y in 0..y {
         for _x in 0..x {
@@ -24,7 +24,7 @@ fn render(state: &Vec<Vec<bool>>, x: usize, y: usize) {
         }
         _formatted_state.push_str("\n")
     }
-    println!("{}", _formatted_state);
+    return _formatted_state;
 }
 
 fn main() {
@@ -43,7 +43,9 @@ fn main() {
 
     let state = new_state(x, y);
 
-    render(&state, x, y);
+    println!("Render of a base state for x={0}, y={1}: ", x, y);
 
-    println!("Render of a base state for x={0}, y={1}", x, y);
+    let rendered = render(&state, x, y).to_owned();
+    println!("{}", rendered);
+
 }
