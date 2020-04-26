@@ -32,7 +32,7 @@ impl GameState {
         };
     }
 
-    fn next(self: GameState) -> GameState {
+    fn next(&mut self) {
         let new_grid: Vec<Vec<bool>> = (0..self.x).map(|x| {
             (0..self.y).map(|y| {
                 let mut neighbors: u8 = 0;
@@ -63,12 +63,8 @@ impl GameState {
             }).collect()
         }).collect();
 
-        return GameState {
-            grid: new_grid,
-            x: self.x,
-            y: self.y,
-            generation: self.generation + 1,
-        };
+        self.grid = new_grid;
+        self.generation += 1;
     }
 }
 
@@ -102,7 +98,7 @@ fn main() {
                     println!("Ciao!");
                     break;
                 } else {
-                    state = state.next();
+                    state.next();
                     render(&state, &mut stdout);
                 }
             }
