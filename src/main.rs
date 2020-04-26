@@ -4,69 +4,15 @@ use clap::{Arg, App, value_t_or_exit};
 use std::io::{BufWriter, Write};
 use std::io;
 
+mod game;
+use game::State;
+
 const EMPTY_STR: &[u8] = " ".as_bytes();
 
 const CAR_RET: &[u8] = "\n".as_bytes();
 const X: &[u8] = "x".as_bytes();
 const DASH: &[u8] = "-".as_bytes();
 
-struct GameState {
-    grid: Vec<Vec<bool>>,
-    x: usize,
-    y: usize,
-    generation: u32,
-}
-
-impl GameState {
-    fn new(x: usize, y: usize) -> GameState {
-        let mut grid = Vec::<Vec<bool>>::with_capacity(x);
-        for i in 0..x {
-            let v = i == 2;
-            grid.push((0..y).map(|_| v).collect());
-        };
-        return GameState {
-            grid,
-            x,
-            y,
-            generation: 0,
-        };
-    }
-
-    fn next(&mut self) {
-        let new_grid: Vec<Vec<bool>> = (0..self.x).map(|x| {
-            (0..self.y).map(|y| {
-                let mut neighbors: u8 = 0;
-                // add x - 1 neighbors (left neighbors)
-                if x > 0 {
-                    neighbors += if y > 0 && self.grid[x - 1][y - 1] { 1 } else { 0 };
-                    neighbors += if self.grid[x - 1][y] { 1 } else { 0 };
-                    neighbors += if y < (self.y - 1) && self.grid[x - 1][y + 1] { 1 } else { 0 };
-                }
-
-                // add x neighbors (top and bottom)
-                neighbors += if y > 0 && self.grid[x][y - 1] { 1 } else { 0 };
-                neighbors += if y < (self.y - 1) && self.grid[x][y + 1] { 1 } else { 0 };
-
-                // add x + 1 neighbors (right neighbors)
-                if x < self.x - 1 {
-                    neighbors += if y > 0 && self.grid[x + 1][y - 1] { 1 } else { 0 };
-                    neighbors += if self.grid[x + 1][y] { 1 } else { 0 };
-                    neighbors += if y < (self.y - 1) && self.grid[x + 1][y + 1] { 1 } else { 0 };
-                }
-
-                let is_alive =
-                    // Alive cells stay alive if 2 or 3 neighbors
-                    (self.grid[x][y] && (neighbors == 2 || neighbors == 3)) ||
-                        // Dead cells become alive if 3 neighbors
-                        (!self.grid[x][y] && neighbors == 3);
-                return is_alive;
-            }).collect()
-        }).collect();
-
-        self.grid = new_grid;
-        self.generation += 1;
-    }
-}
 
 fn main() {
     let matches = App::new("Conway's game of life")
@@ -84,7 +30,7 @@ fn main() {
     let x = value_t_or_exit!(matches, "x", usize);
     let y = value_t_or_exit!(matches, "y", usize);
 
-    let mut state = GameState::new(x, y);
+    let mut state = State::new(x, y);
     let mut stdout = BufWriter::new(io::stdout());
 
     println!("Render of a base state for x={0}, y={1}: ", x, y);
@@ -108,7 +54,7 @@ fn main() {
 }
 
 
-fn render(state: &GameState, writer: &mut dyn Write) {
+fn render(state: &State, writer: &mut dyn Write) {
     writer.write(format!("\nGeneration {}:\n", state.generation).as_bytes()).unwrap();
     (0..state.y).for_each(|y| {
         (0..state.x).for_each(|x| {
