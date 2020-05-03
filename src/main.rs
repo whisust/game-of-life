@@ -3,9 +3,7 @@ extern crate clap;
 use clap::{Arg, App, value_t_or_exit};
 use std::io::{BufWriter, Write};
 use std::io;
-
-mod game;
-use game::State;
+use game_of_life::State;
 
 
 fn main() {
@@ -50,6 +48,6 @@ fn main() {
 
 fn render(state: &State, writer: &mut dyn Write) {
     writer.write(format!("\nGeneration {}:\n", state.generation).as_bytes()).unwrap();
-    writer.write(state.to_string().as_bytes()).unwrap();
-    writer.flush();
+    writer.write(state.render().as_bytes()).unwrap();
+    writer.flush().unwrap();
 }
