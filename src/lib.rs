@@ -13,50 +13,50 @@ static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 #[wasm_bindgen]
 pub fn new_game(x: usize, y: usize) { State::new(x, y); }
 
-#[wasm_bindgen]
+// #[wasm_bindgen]
 pub struct State {
     pub grid: Vec<Vec<bool>>,
-    pub x: usize,
-    pub y: usize,
+    pub width: usize,
+    pub height: usize,
     pub generation: u32,
 }
 
 
 impl State {
-    pub fn new(x: usize, y: usize) -> State {
-        let mut grid = Vec::<Vec<bool>>::with_capacity(x);
-        for i in 0..x {
+    pub fn new(width: usize, height: usize) -> State {
+        let mut grid = Vec::<Vec<bool>>::with_capacity(width);
+        for i in 0..width {
             let v = i == 2;
-            grid.push((0..y).map(|_| v).collect());
+            grid.push((0..height).map(|_| v).collect());
         };
         return State {
             grid,
-            x,
-            y,
+            width,
+            height,
             generation: 0,
         };
     }
 
     pub fn next(&mut self) {
-        let new_grid: Vec<Vec<bool>> = (0..self.x).map(|x| {
-            (0..self.y).map(|y| {
+        let new_grid: Vec<Vec<bool>> = (0..self.width).map(|x| {
+            (0..self.height).map(|y| {
                 let mut neighbors: u8 = 0;
                 // add x - 1 neighbors (left neighbors)
                 if x > 0 {
                     neighbors += if y > 0 && self.grid[x - 1][y - 1] { 1 } else { 0 };
                     neighbors += if self.grid[x - 1][y] { 1 } else { 0 };
-                    neighbors += if y < (self.y - 1) && self.grid[x - 1][y + 1] { 1 } else { 0 };
+                    neighbors += if y < (self.height - 1) && self.grid[x - 1][y + 1] { 1 } else { 0 };
                 }
 
                 // add x neighbors (top and bottom)
                 neighbors += if y > 0 && self.grid[x][y - 1] { 1 } else { 0 };
-                neighbors += if y < (self.y - 1) && self.grid[x][y + 1] { 1 } else { 0 };
+                neighbors += if y < (self.height - 1) && self.grid[x][y + 1] { 1 } else { 0 };
 
                 // add x + 1 neighbors (right neighbors)
-                if x < self.x - 1 {
+                if x < self.width - 1 {
                     neighbors += if y > 0 && self.grid[x + 1][y - 1] { 1 } else { 0 };
                     neighbors += if self.grid[x + 1][y] { 1 } else { 0 };
-                    neighbors += if y < (self.y - 1) && self.grid[x + 1][y + 1] { 1 } else { 0 };
+                    neighbors += if y < (self.height - 1) && self.grid[x + 1][y + 1] { 1 } else { 0 };
                 }
 
                 let is_alive =
@@ -86,10 +86,10 @@ const FILLED_SQUARE: char = '◼';
 
 impl fmt::Display for State {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        (0..self.y).for_each(|y| {
-            (0..self.x).for_each(|x| {
+        (0..self.height).for_each(|y| {
+            (0..self.width).for_each(|x| {
                 write!(f, "{}", if self.grid[x][y] { FILLED_SQUARE } else { EMPTY_SQUARE }).unwrap();
-                if x < (self.x - 1) {
+                if x < (self.width - 1) {
                     write!(f, "{}", EMPTY_STR).unwrap();
                 }
             });
