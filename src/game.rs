@@ -1,3 +1,5 @@
+use std::fmt;
+
 pub struct State {
     pub grid: Vec<Vec<bool>>,
     pub x: usize,
@@ -53,5 +55,27 @@ impl State {
 
         self.grid = new_grid;
         self.generation += 1;
+    }
+}
+
+
+const EMPTY_STR: char = ' ';
+
+const CAR_RET: char = '\n';
+const EMPTY_SQUARE: char = '◻';
+const FILLED_SQUARE: char = '◼';
+
+impl fmt::Display for State {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        (0..self.y).for_each(|y| {
+            (0..self.x).for_each(|x| {
+                write!(f, "{}", if self.grid[x][y] { FILLED_SQUARE } else { EMPTY_SQUARE });
+                if x < (self.x - 1) {
+                    write!(f, "{}", EMPTY_STR);
+                }
+            });
+            write!(f, "{}", CAR_RET);
+        });
+        Ok(())
     }
 }

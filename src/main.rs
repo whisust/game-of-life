@@ -7,12 +7,6 @@ use std::io;
 mod game;
 use game::State;
 
-const EMPTY_STR: &[u8] = " ".as_bytes();
-
-const CAR_RET: &[u8] = "\n".as_bytes();
-const X: &[u8] = "x".as_bytes();
-const DASH: &[u8] = "-".as_bytes();
-
 
 fn main() {
     let matches = App::new("Conway's game of life")
@@ -56,14 +50,6 @@ fn main() {
 
 fn render(state: &State, writer: &mut dyn Write) {
     writer.write(format!("\nGeneration {}:\n", state.generation).as_bytes()).unwrap();
-    (0..state.y).for_each(|y| {
-        (0..state.x).for_each(|x| {
-            writer.write(if state.grid[x][y] { X } else { DASH }).unwrap();
-            if x < (state.x - 1) {
-                writer.write(EMPTY_STR).unwrap();
-            }
-        });
-        writer.write(CAR_RET).unwrap();
-    });
+    writer.write(state.to_string().as_bytes()).unwrap();
     writer.flush();
 }
