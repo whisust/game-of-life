@@ -11,9 +11,6 @@ use wasm_bindgen::prelude::*;
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
 #[wasm_bindgen]
-pub fn new_game(x: usize, y: usize) { State::new(x, y); }
-
-#[wasm_bindgen]
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Cell {
@@ -30,6 +27,7 @@ pub struct State {
 }
 
 
+#[wasm_bindgen]
 impl State {
     fn get_index(&self, x: usize, y: usize) -> usize {
         (x + self.width * y) as usize
@@ -125,15 +123,6 @@ impl fmt::Display for State {
                 write!(f, "{}", EMPTY_STR).unwrap();
             }
         });
-        // (0..self.height).for_each(|y| {
-        //     (0..self.width).for_each(|x| {
-        //         write!(f, "{}", if self.grid[x][y] { FILLED_SQUARE } else { EMPTY_SQUARE }).unwrap();
-        //         if x < (self.width - 1) {
-        //             write!(f, "{}", EMPTY_STR).unwrap();
-        //         }
-        //     });
-        //     write!(f, "{}", CAR_RET).unwrap();
-        // });
         Ok(())
     }
 }
