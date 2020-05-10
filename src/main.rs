@@ -36,7 +36,7 @@ fn main() {
                     println!("Ciao!");
                     break;
                 } else {
-                    state.next();
+                    state.new_next();
                     render(&state, &mut stdout);
                 }
             }
