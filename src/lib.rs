@@ -10,6 +10,14 @@ use wasm_bindgen::prelude::*;
 #[global_allocator]
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
+extern crate web_sys;
+
+macro_rules! log {
+    ($($t: tt)* ) => {
+        web_sys::console::log_1(&format!($($t)*).into());
+    }
+}
+
 #[wasm_bindgen]
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -38,11 +46,12 @@ impl State {
     }
 
     pub fn new(width: usize, height: usize) -> State {
+        log!("Generating new state with dimensions {} x {}", width, height);
+        utils::set_panic_hook(); // we have to plug this in a common code path
         let mut grid = Vec::<Cell>::with_capacity(width * height);
         for i in 0..width * height {
             let v = i % width == 2;
             grid.push(if v { Cell::Alive } else { Cell::Dead });
-            // grid.push(Cell::Dead);
         }
         return State {
             grid,
@@ -53,7 +62,7 @@ impl State {
     }
 
     pub fn new_pristine() -> State {
-        let mut grid = Vec::<Cell>::with_capacity(0);
+        let grid = Vec::<Cell>::with_capacity(0);
         return State {
             grid,
             width: 0,
