@@ -21,8 +21,8 @@ pub enum Cell {
 #[wasm_bindgen]
 pub struct State {
     grid: Vec<Cell>,
-    width: usize,
-    height: usize,
+    pub width: usize,
+    pub height: usize,
     pub generation: u32,
 }
 
@@ -104,6 +104,7 @@ impl State {
     pub fn render(&self) -> String {
         self.to_string()
     }
+
 }
 
 

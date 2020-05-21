@@ -42,7 +42,7 @@ function animate() {
         } else {
             previousStates.add(newState);
         }
-        let infosString = `Generation ${game.generation}`;
+        let infosString = `Grid ${game.width} x ${game.height} - Generation ${game.generation}`;
         if (isLooping) {
             infosString += `. Loop detected!`;
         }
