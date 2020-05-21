@@ -26,6 +26,15 @@ pub enum Cell {
     Alive = 1,
 }
 
+impl Cell {
+    fn toggle(&mut self) {
+        *self = match *self {
+            Cell::Dead => Cell::Alive,
+            Cell::Alive => Cell::Dead,
+        };
+    }
+}
+
 #[wasm_bindgen]
 pub struct State {
     grid: Vec<Cell>,
@@ -137,6 +146,11 @@ impl State {
     pub fn set_height(&mut self, height: usize) {
         self.height = height;
         self.grid = (0..self.width * height).map(|_| Cell::Dead).collect();
+    }
+
+    pub fn toggle_cell(&mut self, row: usize, column: usize) {
+        let idx = self.get_index(row, column);
+        self.grid[idx].toggle();
     }
 }
 

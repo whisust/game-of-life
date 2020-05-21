@@ -119,5 +119,22 @@ playPauseButton.addEventListener("click", event => {
     }
 });
 
+canvas.addEventListener("click", event => {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+
+    const canvasLeft = (event.clientX - rect.left) * scaleX;
+    const canvasTop = (event.clientY - rect.top) * scaleY;
+
+    const row = Math.min(Math.floor(canvasLeft / CELL_WITH_MARGIN), game.width - 1);
+    const col = Math.min(Math.floor(canvasTop / CELL_WITH_MARGIN), game.height - 1);
+
+    game.toggle_cell(row, col);
+
+    drawGrid();
+    drawCells();
+})
+
 render();
 startAnimating(10);
