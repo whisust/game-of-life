@@ -1,11 +1,23 @@
-import {State} from "game-of-life";
+import {Cell, State} from "game-of-life";
+import {memory} from "game-of-life/game_of_life_bg";
 
-const game = State.new(10, 5);
-const pre = document.getElementById('game-of-life-canvas');
+// Constants
+const CELL_SIZE = 5;
+const MARGIN = 1;
+const CELL_WITH_MARGIN = CELL_SIZE + MARGIN;
+const GRID_COLOR = "#CCCCCC";
+const DEAD_COLOR = "#FFFFFF";
+const ALIVE_COLOR = "#000000";
+
+// Run variables
+const game = State.new(120, 150);
 const infos = document.getElementById('infos');
-const previousStates = new Set();
-let isLooping = false;
+const canvas = document.getElementById('game-of-life-canvas');
+canvas.height = CELL_WITH_MARGIN * game.height + 1;
+canvas.width = CELL_WITH_MARGIN * game.width + 1;
+const ctx = canvas.getContext('2d');
 
+// Values for the animation function
 let fpsInterval, startTime, now, then, elapsed;
 
 // initialize the timer variables and start the animation
@@ -17,6 +29,56 @@ function startAnimating(fps) {
     animate();
 }
 
+const getIndex = (row, column) => {
+    return row * game.width + column;
+}
+
+const drawGrid = () => {
+    ctx.beginPath();
+    ctx.strokeStyle = GRID_COLOR;
+
+    // vertical lines
+    for (let i = 0; i <= game.width; i++) {
+        ctx.moveTo(i * CELL_WITH_MARGIN + 1, 0);
+        ctx.lineTo(i * CELL_WITH_MARGIN + 1, i * CELL_WITH_MARGIN * game.height + 1);
+    }
+
+    // horizontal lines
+    for (let j = 0; j <= game.width; j++) {
+        ctx.moveTo(0, j * CELL_WITH_MARGIN + 1);
+        ctx.lineTo(game.width * CELL_WITH_MARGIN + 1, j * CELL_WITH_MARGIN + 1);
+    }
+
+    ctx.stroke();
+}
+
+const drawCells = () => {
+    const cellsPointer = game.cells();
+    const cells = new Uint8Array(memory.buffer, cellsPointer, game.width * game.height);
+
+    ctx.beginPath();
+
+    for (let row = 0; row < game.height; row++) {
+        for (let col = 0; col < game.width; col++) {
+            const idx = getIndex(row, col);
+
+            ctx.fillStyle = cells[idx] === Cell.Alive ? ALIVE_COLOR : DEAD_COLOR;
+            ctx.fillRect(
+                col * CELL_WITH_MARGIN + 1,
+                row * CELL_WITH_MARGIN + 1,
+                CELL_SIZE,
+                CELL_SIZE
+            );
+        }
+    }
+    ctx.stroke();
+}
+const render = () => {
+    infos.textContent = `Grid ${game.width} x ${game.height} - Generation ${game.generation}`;
+    drawGrid();
+    drawCells();
+    game.next();
+}
 function animate() {
 
     // request another frame
@@ -36,21 +98,9 @@ function animate() {
         then = now - (elapsed % fpsInterval);
 
         // Put your drawing code here
-        let newState = game.render();
-        if (previousStates.has(newState)){
-            isLooping = true;
-        } else {
-            previousStates.add(newState);
-        }
-        let infosString = `Grid ${game.width} x ${game.height} - Generation ${game.generation}`;
-        if (isLooping) {
-            infosString += `. Loop detected!`;
-        }
-        pre.textContent = newState;
-        infos.textContent = infosString;
-        game.next();
+        render();
     }
 }
 
-
-startAnimating(5);
+render();
+startAnimating(10);

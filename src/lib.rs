@@ -105,6 +105,10 @@ impl State {
         self.to_string()
     }
 
+    pub fn cells(&self) -> *const Cell {
+        self.grid.as_ptr()
+    }
+
 }
 
 
