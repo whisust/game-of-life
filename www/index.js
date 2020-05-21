@@ -2,6 +2,9 @@ import {State} from "game-of-life";
 
 const game = State.new(10, 5);
 const pre = document.getElementById('game-of-life-canvas');
+const infos = document.getElementById('infos');
+const previousStates = new Set();
+let isLooping = false;
 
 let fpsInterval, startTime, now, then, elapsed;
 
@@ -28,13 +31,23 @@ function animate() {
     // if enough time has elapsed, draw the next frame
 
     if (elapsed > fpsInterval) {
-
         // Get ready for next frame by setting then=now, but also adjust for your
         // specified fpsInterval not being a multiple of RAF's interval (16.7ms)
         then = now - (elapsed % fpsInterval);
 
         // Put your drawing code here
-        pre.textContent = game.render();
+        let newState = game.render();
+        if (previousStates.has(newState)){
+            isLooping = true;
+        } else {
+            previousStates.add(newState);
+        }
+        let infosString = `Generation ${game.generation}`;
+        if (isLooping) {
+            infosString += `. Loop detected!`;
+        }
+        pre.textContent = newState;
+        infos.textContent = infosString;
         game.next();
     }
 }
