@@ -43,3 +43,6 @@ wasm-pack publish
   for logging panic messages to the developer console.
 * [`wee_alloc`](https://github.com/rustwasm/wee_alloc), an allocator optimized
   for small code size.
+
+
+LAST STATE => https://rustwasm.github.io/docs/book/game-of-life/interactivity.html
