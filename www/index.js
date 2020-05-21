@@ -2,7 +2,7 @@ import {Cell, State} from "game-of-life";
 import {memory} from "game-of-life/game_of_life_bg";
 
 // Constants
-const CELL_SIZE = 5;
+const CELL_SIZE = 15;
 const MARGIN = 1;
 const CELL_WITH_MARGIN = CELL_SIZE + MARGIN;
 const GRID_COLOR = "#CCCCCC";
@@ -10,7 +10,7 @@ const DEAD_COLOR = "#FFFFFF";
 const ALIVE_COLOR = "#000000";
 
 // Run variables
-const game = State.new(120, 150);
+const game = State.new(50,  50);
 const infos = document.getElementById('infos');
 const canvas = document.getElementById('game-of-life-canvas');
 const playPauseButton = document.getElementById('play-pause');
@@ -56,7 +56,6 @@ const drawGrid = () => {
 
     ctx.stroke();
 }
-
 const drawCells = () => {
     const cellsPointer = game.cells();
     const cells = new Uint8Array(memory.buffer, cellsPointer, game.width * game.height);
@@ -78,11 +77,14 @@ const drawCells = () => {
     }
     ctx.stroke();
 }
-const render = () => {
-    infos.textContent = `Grid ${game.width} x ${game.height} - Generation ${game.generation}`;
+const draw = () => {
     drawGrid();
     drawCells();
+}
+const render = () => {
+    infos.textContent = `Grid ${game.width} x ${game.height} - Generation ${game.generation}`;
     game.next();
+    draw();
 }
 
 function animate() {
@@ -132,9 +134,8 @@ canvas.addEventListener("click", event => {
 
     game.toggle_cell(row, col);
 
-    drawGrid();
-    drawCells();
+    draw();
 })
 
-render();
-startAnimating(10);
+draw();
+startAnimating(20);
