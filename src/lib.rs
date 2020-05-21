@@ -42,11 +42,22 @@ impl State {
         for i in 0..width * height {
             let v = i % width == 2;
             grid.push(if v { Cell::Alive } else { Cell::Dead });
+            // grid.push(Cell::Dead);
         }
         return State {
             grid,
             width,
             height,
+            generation: 0,
+        };
+    }
+
+    pub fn new_pristine() -> State {
+        let mut grid = Vec::<Cell>::with_capacity(0);
+        return State {
+            grid,
+            width: 0,
+            height: 0,
             generation: 0,
         };
     }
@@ -91,10 +102,10 @@ impl State {
             let (x, y) = self.get_coordinates(idx);
             let neighbors = self.neighbor_count(x, y);
 
-            return match(self.grid[idx], neighbors) {
+            return match (self.grid[idx], neighbors) {
                 (Cell::Alive, 2) | (Cell::Alive, 3) | (Cell::Dead, 3) => Cell::Alive,
                 _ => Cell::Dead
-            }
+            };
         }).collect();
 
         self.grid = new_grid;
@@ -109,6 +120,28 @@ impl State {
         self.grid.as_ptr()
     }
 
+    pub fn set_width(&mut self, width: usize) {
+        self.width = width;
+        self.grid = (0..width * self.height).map(|_| Cell::Dead).collect();
+    }
+
+    pub fn set_height(&mut self, height: usize) {
+        self.height = height;
+        self.grid = (0..self.width * height).map(|_| Cell::Dead).collect();
+    }
+}
+
+impl State {
+    pub fn get_cells(&self) -> &[Cell] {
+        &self.grid
+    }
+
+    pub fn set_cells(&mut self, cells: &[(usize, usize)]) {
+        for (row, col) in cells.iter().cloned() {
+            let idx = self.get_index(row, col);
+            self.grid[idx] = Cell::Alive;
+        }
+    }
 }
 
 
