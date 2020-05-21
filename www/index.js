@@ -13,20 +13,25 @@ const ALIVE_COLOR = "#000000";
 const game = State.new(120, 150);
 const infos = document.getElementById('infos');
 const canvas = document.getElementById('game-of-life-canvas');
+const playPauseButton = document.getElementById('play-pause');
 canvas.height = CELL_WITH_MARGIN * game.height + 1;
 canvas.width = CELL_WITH_MARGIN * game.width + 1;
 const ctx = canvas.getContext('2d');
 
 // Values for the animation function
 let fpsInterval, startTime, now, then, elapsed;
+let requestId;
 
 // initialize the timer variables and start the animation
-
 function startAnimating(fps) {
     fpsInterval = 1000 / fps;
     then = Date.now();
     startTime = then;
     animate();
+}
+
+const isPaused = () => {
+    return requestId === null;
 }
 
 const getIndex = (row, column) => {
@@ -79,11 +84,12 @@ const render = () => {
     drawCells();
     game.next();
 }
+
 function animate() {
 
     // request another frame
 
-    requestAnimationFrame(animate);
+    requestId = requestAnimationFrame(animate);
 
     // calc elapsed time since last loop
 
@@ -101,6 +107,17 @@ function animate() {
         render();
     }
 }
+
+playPauseButton.addEventListener("click", event => {
+    if (isPaused()) {
+        playPauseButton.textContent = "⏸";
+        animate();
+    } else {
+        playPauseButton.textContent = "▶";
+        cancelAnimationFrame(requestId);
+        requestId = null;
+    }
+});
 
 render();
 startAnimating(10);
