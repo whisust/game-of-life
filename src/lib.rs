@@ -48,24 +48,10 @@ impl State {
         log!("Generating new state with dimensions {} x {}", width, height);
         utils::set_panic_hook(); // we have to plug this in a common code path
         let mut grid = FixedBitSet::with_capacity(width * height);
-        for i in 0..width * height {
-            let v = i % width == 2;
-            grid.set(i, v);
-        }
         return State {
             grid,
             width,
             height,
-            generation: 0,
-        };
-    }
-
-    pub fn new_pristine() -> State {
-        let grid = FixedBitSet::with_capacity(0);
-        return State {
-            grid,
-            width: 0,
-            height: 0,
             generation: 0,
         };
     }
