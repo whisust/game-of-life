@@ -10,7 +10,7 @@ const DEAD_COLOR = "#FFFFFF";
 const ALIVE_COLOR = "#000000";
 
 // Run variables
-const game = State.new(50, 50);
+let game = State.new(50, 50);
 const infos = document.getElementById('infos');
 const canvas = document.getElementById('game-of-life-canvas');
 const playPauseButton = document.getElementById('play-pause');
@@ -94,24 +94,18 @@ const render = () => {
 }
 
 function animate() {
-
     // request another frame
-
     requestId = requestAnimationFrame(animate);
 
     // calc elapsed time since last loop
-
     now = Date.now();
     elapsed = now - then;
 
     // if enough time has elapsed, draw the next frame
-
     if (elapsed > fpsInterval) {
         // Get ready for next frame by setting then=now, but also adjust for your
         // specified fpsInterval not being a multiple of RAF's interval (16.7ms)
         then = now - (elapsed % fpsInterval);
-
-        // Put your drawing code here
         render();
     }
 }
@@ -126,6 +120,13 @@ playPauseButton.addEventListener("click", event => {
         requestId = null;
     }
 });
+
+document.getElementById("reset").addEventListener("click", event => {
+    game = State.new(50, 50);
+    cancelAnimationFrame(requestId);
+    requestId = null;
+    animate();
+})
 
 canvas.addEventListener("click", event => {
     const rect = canvas.getBoundingClientRect();
