@@ -52,5 +52,5 @@ LAST STATE => https://rustwasm.github.io/docs/book/game-of-life/interactivity.ht
  - ~~add size input~~
  - ~~add reset button~~
  - ~~add spaceships on alt-click~~
- - add pulsar on shift-click
+ - ~~add pulsar on shift-click~~
  - make it look nice
