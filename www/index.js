@@ -1,4 +1,4 @@
-import {State} from "game-of-life";
+import {State, Pattern} from "game-of-life";
 import {memory} from "game-of-life/game_of_life_bg";
 
 // Constants
@@ -172,7 +172,13 @@ canvas.addEventListener("click", event => {
     const row = Math.min(Math.floor(canvasLeft / CELL_WITH_MARGIN), game.width - 1);
     const col = Math.min(Math.floor(canvasTop / CELL_WITH_MARGIN), game.height - 1);
 
-    game.toggle_cell(row, col);
+    if (event.altKey) {
+        game.add_pattern(row, col, Pattern.Glider);
+    } else if (event.shiftKey) {
+        game.add_pattern(row, col, Pattern.Pulsar);
+    } else {
+        game.toggle_cell(row, col);
+    }
 
     draw();
 })
