@@ -11,6 +11,9 @@ use wasm_bindgen::prelude::*;
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
 extern crate web_sys;
+extern crate fixedbitset;
+
+use fixedbitset::FixedBitSet;
 
 macro_rules! log {
     ($($t: tt)* ) => {
@@ -19,25 +22,8 @@ macro_rules! log {
 }
 
 #[wasm_bindgen]
-#[repr(u8)]
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum Cell {
-    Dead = 0,
-    Alive = 1,
-}
-
-impl Cell {
-    fn toggle(&mut self) {
-        *self = match *self {
-            Cell::Dead => Cell::Alive,
-            Cell::Alive => Cell::Dead,
-        };
-    }
-}
-
-#[wasm_bindgen]
 pub struct State {
-    grid: Vec<Cell>,
+    grid: FixedBitSet,
     pub width: usize,
     pub height: usize,
     pub generation: u32,
@@ -54,13 +40,17 @@ impl State {
         (idx % self.width, idx / self.width)
     }
 
+    fn cell_at(&self, x: usize, y: usize) -> bool {
+        self.grid[self.get_index(x, y)]
+    }
+
     pub fn new(width: usize, height: usize) -> State {
         log!("Generating new state with dimensions {} x {}", width, height);
         utils::set_panic_hook(); // we have to plug this in a common code path
-        let mut grid = Vec::<Cell>::with_capacity(width * height);
+        let mut grid = FixedBitSet::with_capacity(width * height);
         for i in 0..width * height {
             let v = i % width == 2;
-            grid.push(if v { Cell::Alive } else { Cell::Dead });
+            grid.set(i, v);
         }
         return State {
             grid,
@@ -71,7 +61,7 @@ impl State {
     }
 
     pub fn new_pristine() -> State {
-        let grid = Vec::<Cell>::with_capacity(0);
+        let grid = FixedBitSet::with_capacity(0);
         return State {
             grid,
             width: 0,
@@ -85,30 +75,30 @@ impl State {
         // add x - 1 neighbors (left neighbors)
         if x > 0 {
             if y > 0 {
-                neighbors += self.grid[self.get_index(x - 1, y - 1)] as u8;
+                neighbors += self.cell_at(x - 1, y - 1) as u8;
             }
-            neighbors += self.grid[self.get_index(x - 1, y)] as u8;
+            neighbors += self.cell_at(x - 1, y) as u8;
             if y < (self.height - 1) {
-                neighbors += self.grid[self.get_index(x - 1, y + 1)] as u8
+                neighbors += self.cell_at(x - 1, y + 1) as u8
             }
         }
 
         // add x neighbors (top and bottom)
         if y > 0 {
-            neighbors += self.grid[self.get_index(x, y - 1)] as u8;
+            neighbors += self.cell_at(x, y - 1) as u8;
         }
         if y < (self.height - 1) {
-            neighbors += self.grid[self.get_index(x, y + 1)] as u8;
+            neighbors += self.cell_at(x, y + 1) as u8;
         }
 
         // add x + 1 neighbors (right neighbors)
         if x < self.width - 1 {
             if y > 0 {
-                neighbors += self.grid[self.get_index(x + 1, y - 1)] as u8;
+                neighbors += self.cell_at(x + 1, y - 1) as u8;
             }
-            neighbors += self.grid[self.get_index(x + 1, y)] as u8;
+            neighbors += self.cell_at(x + 1, y) as u8;
             if y < (self.height - 1) {
-                neighbors += self.grid[self.get_index(x + 1, y + 1)] as u8;
+                neighbors += self.cell_at(x + 1, y + 1) as u8;
             }
         }
         neighbors
@@ -116,15 +106,16 @@ impl State {
 
 
     pub fn next(&mut self) {
-        let new_grid: Vec<Cell> = (0..self.width * self.height).map(|idx| {
+        let mut new_grid = FixedBitSet::with_capacity(self.width * self.height);
+        for idx in 0..self.width * self.height {
             let (x, y) = self.get_coordinates(idx);
             let neighbors = self.neighbor_count(x, y);
 
-            return match (self.grid[idx], neighbors) {
-                (Cell::Alive, 2) | (Cell::Alive, 3) | (Cell::Dead, 3) => Cell::Alive,
-                _ => Cell::Dead
-            };
-        }).collect();
+            new_grid.set(idx, match (self.grid[idx], neighbors) {
+                (true, 2) | (true, 3) | (false, 3) => true,
+                _ => false
+            });
+        };
 
         self.grid = new_grid;
         self.generation += 1;
@@ -134,35 +125,35 @@ impl State {
         self.to_string()
     }
 
-    pub fn cells(&self) -> *const Cell {
-        self.grid.as_ptr()
+    pub fn cells(&self) -> *const u32 {
+        self.grid.as_slice().as_ptr()
     }
 
     pub fn set_width(&mut self, width: usize) {
         self.width = width;
-        self.grid = (0..width * self.height).map(|_| Cell::Dead).collect();
+        self.grid = FixedBitSet::with_capacity(width * self.height);
     }
 
     pub fn set_height(&mut self, height: usize) {
         self.height = height;
-        self.grid = (0..self.width * height).map(|_| Cell::Dead).collect();
+        self.grid = FixedBitSet::with_capacity(self.width * height);
     }
 
     pub fn toggle_cell(&mut self, row: usize, column: usize) {
         let idx = self.get_index(row, column);
-        self.grid[idx].toggle();
+        self.grid.toggle(idx);
     }
 }
 
 impl State {
-    pub fn get_cells(&self) -> &[Cell] {
-        &self.grid
+    pub fn get_cells(&self) -> &[u32] {
+        &self.grid.as_slice()
     }
 
     pub fn set_cells(&mut self, cells: &[(usize, usize)]) {
         for (row, col) in cells.iter().cloned() {
             let idx = self.get_index(row, col);
-            self.grid[idx] = Cell::Alive;
+            self.grid.set(idx, false);
         }
     }
 }
@@ -177,7 +168,7 @@ const FILLED_SQUARE: char = '◼';
 impl fmt::Display for State {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         (0..self.width * self.height).for_each(|i| {
-            write!(f, "{}", if self.grid[i] == Cell::Alive { FILLED_SQUARE } else { EMPTY_SQUARE }).unwrap();
+            write!(f, "{}", if self.grid[i] { FILLED_SQUARE } else { EMPTY_SQUARE }).unwrap();
             if (i % self.width) == self.width - 1 {
                 write!(f, "{}", CAR_RET).unwrap();
             } else {

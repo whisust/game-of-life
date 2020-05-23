@@ -1,4 +1,4 @@
-import {Cell, State} from "game-of-life";
+import {State} from "game-of-life";
 import {memory} from "game-of-life/game_of_life_bg";
 
 // Constants
@@ -10,7 +10,7 @@ const DEAD_COLOR = "#FFFFFF";
 const ALIVE_COLOR = "#000000";
 
 // Run variables
-const game = State.new(50,  50);
+const game = State.new(50, 50);
 const infos = document.getElementById('infos');
 const canvas = document.getElementById('game-of-life-canvas');
 const playPauseButton = document.getElementById('play-pause');
@@ -38,6 +38,12 @@ const getIndex = (row, column) => {
     return row * game.width + column;
 }
 
+const bitIsSet = (n, arr) => {
+    const byte = Math.floor(n / 8);
+    const mask = 1 << (n % 8);
+    return (arr[byte] & mask) === mask;
+}
+
 const drawGrid = () => {
     ctx.beginPath();
     ctx.strokeStyle = GRID_COLOR;
@@ -58,7 +64,7 @@ const drawGrid = () => {
 }
 const drawCells = () => {
     const cellsPointer = game.cells();
-    const cells = new Uint8Array(memory.buffer, cellsPointer, game.width * game.height);
+    const cells = new Uint8Array(memory.buffer, cellsPointer, game.width * game.height / 8);
 
     ctx.beginPath();
 
@@ -66,7 +72,7 @@ const drawCells = () => {
         for (let col = 0; col < game.width; col++) {
             const idx = getIndex(row, col);
 
-            ctx.fillStyle = cells[idx] === Cell.Alive ? ALIVE_COLOR : DEAD_COLOR;
+            ctx.fillStyle = bitIsSet(idx, cells) ? ALIVE_COLOR : DEAD_COLOR;
             ctx.fillRect(
                 col * CELL_WITH_MARGIN + 1,
                 row * CELL_WITH_MARGIN + 1,
