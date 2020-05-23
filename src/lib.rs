@@ -21,6 +21,8 @@ macro_rules! log {
     }
 }
 
+
+
 #[wasm_bindgen]
 pub struct State {
     grid: FixedBitSet,
@@ -39,6 +41,50 @@ pub enum Pattern {
     Pulsar,
 }
 
+fn maybe_gen(x: usize, y: usize, offset: i32, gen: &dyn Fn(usize, usize) -> Vec<(usize, usize, bool)>) -> Vec<(usize, usize, bool)> {
+    let _y = y as i32 + offset;
+    if _y >= 0 {
+        gen(x, _y as usize)
+    } else {
+        Vec::<(usize, usize, bool)>::with_capacity(0)
+    }
+}
+
+impl Pattern {
+    fn line_gen(x: usize, y: usize, min: i32, max: i32, value_gen: &dyn Fn(i32) -> bool) -> Vec<(usize, usize, bool)> {
+        let mut vec = Vec::<(usize, usize, bool)>::new();
+        for offset in min..max {
+            let _x = x as i32 + offset;
+            if _x >= 0 {
+                vec.push((_x as usize, y, value_gen(offset)))
+            }
+        };
+        vec
+    }
+
+    fn pulsar_vec_empty(x: usize, y: usize) -> Vec<(usize, usize, bool)> {
+        Pattern::line_gen(x, y, -7, 7, &|_: i32| { false })
+    }
+
+    fn pulsar_vec_1(x: usize, y: usize) -> Vec<(usize, usize, bool)> {
+        Pattern::line_gen(x, y, -7, 7, &|offset: i32| {
+            match offset {
+                -4..=-2 | 2..=4 => true,
+                _ => false
+            }
+        })
+    }
+
+    fn pulsar_vec_2(x: usize, y: usize) -> Vec<(usize, usize, bool)> {
+        Pattern::line_gen(x, y, -7, 7, &|offset: i32| {
+            match offset {
+                -6 | -1 | 1 | 6 => true,
+                _ => false
+            }
+        })
+    }
+}
+
 impl PatternIndexes for Pattern {
     fn cells(pattern: Pattern, x: usize, y: usize) -> Vec<(usize, usize, bool)> {
         match pattern {
@@ -47,21 +93,28 @@ impl PatternIndexes for Pattern {
                 (x - 1, y, false), (x, y, false), (x + 1, y, true),
                 (x - 1, y + 1, true), (x, y + 1, true), (x + 1, y + 1, true),
             ].to_vec(),
-            _ => Vec::<(usize, usize, bool)>::new()
+            Pattern::Pulsar => {
+                [
+                    maybe_gen(x, y, -7, &Pattern::pulsar_vec_empty),
+                    maybe_gen(x, y, -6, &Pattern::pulsar_vec_1),
+                    maybe_gen(x, y, -5, &Pattern::pulsar_vec_empty),
+                    maybe_gen(x, y, -4, &Pattern::pulsar_vec_2),
+                    maybe_gen(x, y, -3, &Pattern::pulsar_vec_2),
+                    maybe_gen(x, y, -2, &Pattern::pulsar_vec_2),
+                    maybe_gen(x, y, -1, &Pattern::pulsar_vec_1),
+                    maybe_gen(x, y, 0, &Pattern::pulsar_vec_empty),
+                    maybe_gen(x, y, 1, &Pattern::pulsar_vec_1),
+                    maybe_gen(x, y, 2, &Pattern::pulsar_vec_empty),
+                    maybe_gen(x, y, 3, &Pattern::pulsar_vec_2),
+                    maybe_gen(x, y, 4, &Pattern::pulsar_vec_2),
+                    maybe_gen(x, y, 5, &Pattern::pulsar_vec_2),
+                    maybe_gen(x, y, 6, &Pattern::pulsar_vec_1),
+                    maybe_gen(x, y, 7, &Pattern::pulsar_vec_empty),
+                ].concat()
+            }
         }
     }
 }
-
-// impl PatternIndexes for Pattern::Pulsar {
-//     fn cells(x: usize, y: usize) -> *[(usize, usize, bool)] {
-//         return *[
-//             (x - 1, y + 1, false), (x, y + 1, true), (x + 1, y + 1, true),
-//             (x - 1, y, false), (x, y, false), (x + 1, y, true),
-//             (x - 1, y - 1, true), (x, y - 1, true), (x + 1, y - 1, true),
-//         ];
-//     }
-// }
-
 
 #[wasm_bindgen]
 impl State {
@@ -175,7 +228,7 @@ impl State {
 
     pub fn set_cells(&mut self, cells: &[(usize, usize)], enabled: bool) {
         for (row, col) in cells.iter().cloned() {
-            if row <= self.width && col <= self.height {
+            if row < self.width && col < self.height {
                 let idx = self.get_index(row, col);
                 self.grid.set(idx, enabled);
             }
@@ -184,14 +237,13 @@ impl State {
 
     pub fn set_pattern(&mut self, cells: Vec<(usize, usize, bool)>) {
         for (row, col, enabled) in cells.iter().cloned() {
-            if row <= self.width && col <= self.height {
+            if row < self.width && col < self.height {
                 let idx = self.get_index(row, col);
                 self.grid.set(idx, enabled);
             }
         }
     }
 }
-
 
 const EMPTY_STR: char = ' ';
 
