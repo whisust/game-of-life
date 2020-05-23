@@ -48,9 +48,5 @@ wasm-pack publish
 LAST STATE => https://rustwasm.github.io/docs/book/game-of-life/interactivity.html
 
 # TODO
- - ~~replace array with fixed bit set~~
- - ~~add size input~~
- - ~~add reset button~~
- - ~~add spaceships on alt-click~~
- - ~~add pulsar on shift-click~~
  - make it look nice
+ - time profile js + wasm to optimize it
