@@ -2,7 +2,7 @@ import {State, Pattern} from "game-of-life";
 import {memory} from "game-of-life/game_of_life_bg";
 
 // Constants
-const CELL_SIZE = 15;
+const CELL_SIZE = 10;
 const MARGIN = 1;
 const CELL_WITH_MARGIN = CELL_SIZE + MARGIN;
 const GRID_COLOR = "#CCCCCC";
