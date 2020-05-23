@@ -10,19 +10,31 @@ const DEAD_COLOR = "#FFFFFF";
 const ALIVE_COLOR = "#000000";
 
 // Run variables
-let game = State.new(50, 50);
+let game;
 const infos = document.getElementById('infos');
 const canvas = document.getElementById('game-of-life-canvas');
-const playPauseButton = document.getElementById('play-pause');
-canvas.height = CELL_WITH_MARGIN * game.height + 1;
-canvas.width = CELL_WITH_MARGIN * game.width + 1;
+resetCanvas();
 const ctx = canvas.getContext('2d');
+const playPauseButton = document.getElementById('play-pause');
 
 // Values for the animation function
 let fpsInterval, startTime, now, then, elapsed;
 let requestId;
 
 // initialize the timer variables and start the animation
+function getHeight() {
+    return document.getElementById('game-height').value;
+}
+
+function getWidth() {
+    return document.getElementById('game-width').value;
+}
+
+function resetCanvas() {
+    canvas.height = CELL_WITH_MARGIN * getHeight() + 1;
+    canvas.width = CELL_WITH_MARGIN * getWidth() + 1;
+}
+
 function startAnimating(fps) {
     fpsInterval = 1000 / fps;
     then = Date.now();
@@ -31,7 +43,7 @@ function startAnimating(fps) {
 }
 
 const isPaused = () => {
-    return requestId === null;
+    return requestId === null || requestId === undefined;
 }
 
 const getIndex = (row, column) => {
@@ -83,14 +95,34 @@ const drawCells = () => {
     }
     ctx.stroke();
 }
+
+const setPlayPauseButton = () => {
+    playPauseButton.textContent = isPaused() ? "▶" : "⏸";
+}
+
 const draw = () => {
     drawGrid();
     drawCells();
+    infos.textContent = `Grid ${game.width} x ${game.height} - Generation ${game.generation}`;
 }
 const render = () => {
-    infos.textContent = `Grid ${game.width} x ${game.height} - Generation ${game.generation}`;
     game.next();
     draw();
+}
+
+function init() {
+    let width = getWidth();
+    let height = getHeight();
+    game = State.new(width, height);
+    resetCanvas();
+    draw();
+    setPlayPauseButton();
+}
+
+function reset() {
+    cancelAnimationFrame(requestId);
+    requestId = null;
+    init();
 }
 
 function animate() {
@@ -113,7 +145,7 @@ function animate() {
 playPauseButton.addEventListener("click", event => {
     if (isPaused()) {
         playPauseButton.textContent = "⏸";
-        animate();
+        startAnimating(20);
     } else {
         playPauseButton.textContent = "▶";
         cancelAnimationFrame(requestId);
@@ -122,10 +154,11 @@ playPauseButton.addEventListener("click", event => {
 });
 
 document.getElementById("reset").addEventListener("click", event => {
-    game = State.new(50, 50);
-    cancelAnimationFrame(requestId);
-    requestId = null;
-    animate();
+    reset();
+})
+
+document.getElementById("change-dimensions").addEventListener("click", event => {
+    reset();
 })
 
 canvas.addEventListener("click", event => {
@@ -144,5 +177,4 @@ canvas.addEventListener("click", event => {
     draw();
 })
 
-draw();
-startAnimating(20);
+init();

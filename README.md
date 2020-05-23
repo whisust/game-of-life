@@ -49,7 +49,7 @@ LAST STATE => https://rustwasm.github.io/docs/book/game-of-life/interactivity.ht
 
 # TODO
  - ~~replace array with fixed bit set~~
- - add size input
+ - ~~add size input~~
  - ~~add reset button~~
  - add spaceships on ctrl-click
  - add exploders on alt-click
