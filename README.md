@@ -8,12 +8,9 @@
 
 ## About
 
-[**📚 Read this template tutorial! 📚**][template-docs]
+This is a toy project, designed to learn how to use `wasm-pack` to create embeddable rust code and graphical html / js.
 
-This template is designed for compiling Rust libraries into WebAssembly and
-publishing the resulting package to NPM.
-
-[tutorials]: https://rustwasm.github.io/docs/book/
+It has not other purpose than having some fun while playing with living cells.
 
 ## 🚴 Usage
 
@@ -23,30 +20,22 @@ publishing the resulting package to NPM.
 wasm-pack build
 ```
 
-### 🔬 Test in Headless Browsers with `wasm-pack test`
+### 🛠️ Build the webpage with webpack and node
 
 ```
-wasm-pack test --headless --firefox
+npm install
+npm start
 ```
 
-### 🎁 Publish to NPM with `wasm-pack publish`
 
-```
-wasm-pack publish
-```
+- `ctrl + <click>` to generate a pulsar
+- `alt + <click>` to generate a glider
+- `<click>` to toggle a cell
 
-## 🔋 Batteries Included
-
-* [`wasm-bindgen`](https://github.com/rustwasm/wasm-bindgen) for communicating
-  between WebAssembly and JavaScript.
-* [`console_error_panic_hook`](https://github.com/rustwasm/console_error_panic_hook)
-  for logging panic messages to the developer console.
-* [`wee_alloc`](https://github.com/rustwasm/wee_alloc), an allocator optimized
-  for small code size.
 
 
 LAST STATE => https://rustwasm.github.io/docs/book/game-of-life/interactivity.html
 
-# TODO
+## TODO
  - make it look nice
  - time profile js + wasm to optimize it
